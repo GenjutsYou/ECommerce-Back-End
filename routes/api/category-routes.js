@@ -62,12 +62,20 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  // Delete a category by its `id` value
-  Category.destroy({
+  // Delete the associated products first
+  Product.destroy({
     where: {
-      id: req.params.id,
+      category_id: req.params.id,
     },
   })
+    .then(() => {
+      // After deleting the products, now delete the category
+      return Category.destroy({
+        where: {
+          id: req.params.id,
+        },
+      });
+    })
     .then((category) => {
       if (!category) {
         res.status(404).json({ message: 'No category found with this id' });
@@ -80,5 +88,6 @@ router.delete('/:id', (req, res) => {
       res.status(500).json(err);
     });
 });
+
 
 module.exports = router;
